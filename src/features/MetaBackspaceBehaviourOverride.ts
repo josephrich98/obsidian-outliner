@@ -6,6 +6,7 @@ import { Feature } from "./Feature";
 
 import { MyEditor } from "../editor";
 import { DeleteTillCurrentLineContentStart } from "../operations/DeleteTillCurrentLineContentStart";
+import { DeleteTillPreviousLineContentEnd } from "../operations/DeleteTillPreviousLineContentEnd";
 import { IMEDetector } from "../services/IMEDetector";
 import { OperationPerformer } from "../services/OperationPerformer";
 import { Settings } from "../services/Settings";
@@ -43,8 +44,19 @@ export class MetaBackspaceBehaviourOverride implements Feature {
   };
 
   private run = (editor: MyEditor) => {
-    return this.operationPerformer.perform(
+    const res = this.operationPerformer.perform(
       (root) => new DeleteTillCurrentLineContentStart(root),
+      editor,
+    );
+
+    if (res.shouldUpdate || res.shouldStopPropagation) {
+      return res;
+    }
+
+    // The cursor is already at the content start, so behave like Backspace:
+    // merge with the previous line or let Obsidian remove the bullet.
+    return this.operationPerformer.perform(
+      (root) => new DeleteTillPreviousLineContentEnd(root),
       editor,
     );
   };

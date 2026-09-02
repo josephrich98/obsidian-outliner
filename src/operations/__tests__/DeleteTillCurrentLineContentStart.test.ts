@@ -58,6 +58,22 @@ test("should do nothing if cursor is already at the start of line content", () =
   expect(root.getCursor().ch).toBe(2);
 });
 
+test("should not stop propagation if cursor is already at the start of line content", () => {
+  const root = makeRoot({
+    editor: makeEditor({
+      text: "- item 1\n- item 2\n    - item 2.1\n    - item 2.2\n- item 3\n",
+      cursor: { line: 1, ch: 2 },
+    }),
+    settings: makeSettings(),
+  });
+
+  const op = new DeleteTillCurrentLineContentStart(root);
+  op.perform();
+
+  expect(op.shouldStopPropagation()).toBe(false);
+  expect(op.shouldUpdate()).toBe(false);
+});
+
 test("should not do anything if there are multiple selections", () => {
   const editor = makeEditor({
     text: "- item 1\n- item 2\n    - item 2.1\n    - item 2.2\n- item 3\n",
