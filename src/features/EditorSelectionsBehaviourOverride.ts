@@ -1,13 +1,12 @@
 import { Plugin } from "obsidian";
 
-import { EditorState, Transaction } from "@codemirror/state";
+import { EditorState, Transaction, TransactionSpec } from "@codemirror/state";
 
 import { Feature } from "./Feature";
 
-import { MyEditor, getEditorFromState } from "../editor";
+import { StateReader } from "../editor/StateReader";
 import { KeepCursorOutsideFoldedLines } from "../operations/KeepCursorOutsideFoldedLines";
 import { KeepCursorWithinListContent } from "../operations/KeepCursorWithinListContent";
-import { OperationPerformer } from "../services/OperationPerformer";
 import { Parser } from "../services/Parser";
 import { Settings } from "../services/Settings";
 
@@ -16,54 +15,58 @@ export class EditorSelectionsBehaviourOverride implements Feature {
     private plugin: Plugin,
     private settings: Settings,
     private parser: Parser,
-    private operationPerformer: OperationPerformer,
   ) {}
 
   async load() {
     this.plugin.registerEditorExtension(
-      EditorState.transactionExtender.of(this.transactionExtender),
+      EditorState.transactionFilter.of(this.transactionFilter),
     );
   }
 
   async unload() {}
 
-  private transactionExtender = (tr: Transaction): null => {
+  // Adjusting the selection inside a transaction filter means the corrected
+  // cursor position is part of the very same transaction, so the editor never
+  // renders the intermediate (pre-correction) position. Doing it afterwards
+  // in a separate transaction causes a visible flash of the cursor at the
+  // uncorrected position.
+  private transactionFilter = (
+    tr: Transaction,
+  ): TransactionSpec | readonly TransactionSpec[] => {
     if (this.settings.keepCursorWithinContent === "never" || !tr.selection) {
-      return null;
+      return tr;
     }
 
-    const editor = getEditorFromState(tr.startState);
-
-    setTimeout(() => {
-      this.handleSelectionsChanges(editor);
-    }, 0);
-
-    return null;
-  };
-
-  private handleSelectionsChanges = (editor: MyEditor) => {
-    const root = this.parser.parse(editor);
+    const reader = new StateReader(tr.state);
+    const root = this.parser.parse(reader);
 
     if (!root) {
-      return;
+      return tr;
     }
 
-    {
-      const { shouldStopPropagation } = this.operationPerformer.eval(
-        root,
-        new KeepCursorOutsideFoldedLines(root),
-        editor,
-      );
-
-      if (shouldStopPropagation) {
-        return;
-      }
-    }
-
-    this.operationPerformer.eval(
-      root,
+    // Filters are not re-applied to the spec a filter returns, so both
+    // corrections have to happen in this single pass.
+    const operations = [
+      new KeepCursorOutsideFoldedLines(root),
       new KeepCursorWithinListContent(root),
-      editor,
-    );
+    ];
+
+    let updated = false;
+    for (const op of operations) {
+      op.perform();
+      updated = updated || op.shouldUpdate();
+    }
+
+    if (!updated) {
+      return tr;
+    }
+
+    return [
+      tr,
+      {
+        selection: reader.toEditorSelection(root.getSelections()),
+        sequential: true,
+      },
+    ];
   };
 }

@@ -74,12 +74,7 @@ export default class ObsidianOutlinerPlugin extends Plugin {
       new ListsFoldingCommands(this, this.obsidianSettings),
 
       // features based on settings.keepCursorWithinContent
-      new EditorSelectionsBehaviourOverride(
-        this,
-        this.settings,
-        this.parser,
-        this.operationPerformer,
-      ),
+      new EditorSelectionsBehaviourOverride(this, this.settings, this.parser),
       new ArrowLeftAndCtrlArrowLeftBehaviourOverride(
         this,
         this.settings,
