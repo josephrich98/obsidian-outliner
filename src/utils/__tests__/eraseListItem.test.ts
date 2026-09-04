@@ -1,8 +1,5 @@
 import { makeEditor } from "../../__mocks__";
-import {
-  eraseCheckboxItemTillCursor,
-  eraseEmptyListItem,
-} from "../eraseListItem";
+import { eraseEmptyListItem, eraseListItemTillCursor } from "../eraseListItem";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const getText = (editor: unknown) => (editor as any).getValue();
@@ -158,7 +155,7 @@ test("should erase the whole line of a checkbox item with text", () => {
     cursor: { line: 1, ch: 9 },
   });
 
-  expect(eraseCheckboxItemTillCursor(editor)).toBe(true);
+  expect(eraseListItemTillCursor(editor)).toBe(true);
   expect(getText(editor)).toBe("- one\n\n");
   expect(getCursor(editor)).toEqual({ line: 1, ch: 0 });
 });
@@ -169,7 +166,7 @@ test("should erase the whole line of a checked item with text", () => {
     cursor: { line: 0, ch: 9 },
   });
 
-  expect(eraseCheckboxItemTillCursor(editor)).toBe(true);
+  expect(eraseListItemTillCursor(editor)).toBe(true);
   expect(getText(editor)).toBe("\n");
 });
 
@@ -179,7 +176,7 @@ test("should erase the whole line of a nested checkbox item with text", () => {
     cursor: { line: 1, ch: 13 },
   });
 
-  expect(eraseCheckboxItemTillCursor(editor)).toBe(true);
+  expect(eraseListItemTillCursor(editor)).toBe(true);
   expect(getText(editor)).toBe("- one\n\n");
 });
 
@@ -189,7 +186,7 @@ test("should erase only till the cursor on a checkbox item", () => {
     cursor: { line: 0, ch: 9 },
   });
 
-  expect(eraseCheckboxItemTillCursor(editor)).toBe(true);
+  expect(eraseListItemTillCursor(editor)).toBe(true);
   expect(getText(editor)).toBe(" three\n");
 });
 
@@ -199,17 +196,28 @@ test("should not erase the line of a checkbox item with children", () => {
     cursor: { line: 0, ch: 9 },
   });
 
-  expect(eraseCheckboxItemTillCursor(editor)).toBe(false);
+  expect(eraseListItemTillCursor(editor)).toBe(false);
   expect(getText(editor)).toBe("- [ ] two\n    - three\n");
 });
 
-test("should not erase the line of an item without a checkbox", () => {
+test("should erase the whole line of a bullet item with text", () => {
   const editor = makeEditor({
-    text: "- two\n",
+    text: "- one\n- two\n",
+    cursor: { line: 1, ch: 5 },
+  });
+
+  expect(eraseListItemTillCursor(editor)).toBe(true);
+  expect(getText(editor)).toBe("- one\n\n");
+  expect(getCursor(editor)).toEqual({ line: 1, ch: 0 });
+});
+
+test("should not erase the line of a bullet item with children", () => {
+  const editor = makeEditor({
+    text: "- two\n    - three\n",
     cursor: { line: 0, ch: 5 },
   });
 
-  expect(eraseCheckboxItemTillCursor(editor)).toBe(false);
+  expect(eraseListItemTillCursor(editor)).toBe(false);
 });
 
 test("should not erase the line of a note line", () => {
@@ -218,7 +226,7 @@ test("should not erase the line of a note line", () => {
     cursor: { line: 1, ch: 6 },
   });
 
-  expect(eraseCheckboxItemTillCursor(editor)).toBe(false);
+  expect(eraseListItemTillCursor(editor)).toBe(false);
 });
 
 test("should not erase the line if the cursor is inside the checkbox marker", () => {
@@ -227,6 +235,6 @@ test("should not erase the line if the cursor is inside the checkbox marker", ()
     cursor: { line: 0, ch: 2 },
   });
 
-  expect(eraseCheckboxItemTillCursor(editor)).toBe(false);
+  expect(eraseListItemTillCursor(editor)).toBe(false);
   expect(getText(editor)).toBe("- [ ] two\n");
 });

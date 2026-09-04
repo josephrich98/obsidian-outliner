@@ -103,7 +103,7 @@ test("cmd+backspace erases a checkbox with text, leaving an empty line", () => {
   expect(getCursor(editor)).toEqual({ line: 1, ch: 0 });
 });
 
-test("cmd+backspace on a bullet with text keeps the bullet", () => {
+test("cmd+backspace erases a bullet with text, leaving an empty line", () => {
   const editor = makeEditor({
     text: "- one\n- two\n",
     cursor: { line: 1, ch: 5 },
@@ -111,7 +111,30 @@ test("cmd+backspace on a bullet with text keeps the bullet", () => {
 
   pressBackspace(editor, true);
 
-  expect(getText(editor)).toBe("- one\n- \n");
+  expect(getText(editor)).toBe("- one\n\n");
+  expect(getCursor(editor)).toEqual({ line: 1, ch: 0 });
+});
+
+test("cmd+backspace keeps the bullet when the item has children", () => {
+  const editor = makeEditor({
+    text: "- one\n- two\n    - three\n",
+    cursor: { line: 1, ch: 5 },
+  });
+
+  pressBackspace(editor, true);
+
+  expect(getText(editor)).toBe("- one\n- \n    - three\n");
+});
+
+test("cmd+backspace on a note line clears the note content only", () => {
+  const editor = makeEditor({
+    text: "- one\n  note\n",
+    cursor: { line: 1, ch: 6 },
+  });
+
+  pressBackspace(editor, true);
+
+  expect(getText(editor)).toBe("- one\n  \n");
 });
 
 test("backspace on a bullet with text still merges with the item above", () => {

@@ -12,8 +12,8 @@ import { OperationPerformer } from "../services/OperationPerformer";
 import { Settings } from "../services/Settings";
 import { createKeymapRunCallback } from "../utils/createKeymapRunCallback";
 import {
-  eraseCheckboxItemTillCursor,
   eraseEmptyListItem,
+  eraseListItemTillCursor,
 } from "../utils/eraseListItem";
 
 export class MetaBackspaceBehaviourOverride implements Feature {
@@ -54,9 +54,9 @@ export class MetaBackspaceBehaviourOverride implements Feature {
       return { shouldUpdate: true, shouldStopPropagation: true };
     }
 
-    // On a checkbox item the checkbox and the bullet are erased together with
-    // the content, leaving an empty line.
-    if (eraseCheckboxItemTillCursor(editor)) {
+    // The bullet and the checkbox are erased together with the content, so a
+    // whole item is cleared in one keystroke.
+    if (eraseListItemTillCursor(editor)) {
       return { shouldUpdate: true, shouldStopPropagation: true };
     }
 

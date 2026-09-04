@@ -1,4 +1,4 @@
-# cmd+backspace should remove content only
+# cmd+backspace should erase the whole line of a bullet with text
 
 - platform: `darwin`
 - applyState:
@@ -8,43 +8,6 @@
 - two|
 ```
 
-- keydown: `Cmd-Backspace`
-- assertState:
-
-```md
-- one
-- |
-```
-
-# cmd+backspace should remove content only in notes
-
-- platform: `darwin`
-- applyState:
-
-```md
-- one
-  two|
-```
-
-- keydown: `Cmd-Backspace`
-- assertState:
-
-```md
-- one
-  |
-```
-
-# cmd+backspace should erase the bullet if content is already empty
-
-- platform: `darwin`
-- applyState:
-
-```md
-- one
-- two|
-```
-
-- keydown: `Cmd-Backspace`
 - keydown: `Cmd-Backspace`
 - assertState:
 
@@ -61,6 +24,24 @@
 ```md
 - one
 - [ ] two|
+```
+
+- keydown: `Cmd-Backspace`
+- assertState:
+
+```md
+- one
+|
+```
+
+# cmd+backspace should erase the bullet if the item is empty
+
+- platform: `darwin`
+- applyState:
+
+```md
+- one
+- |
 ```
 
 - keydown: `Cmd-Backspace`
@@ -103,6 +84,44 @@
 
 ```md
 |
+```
+
+# cmd+backspace should keep the bullet if the item has children
+
+- platform: `darwin`
+- applyState:
+
+```md
+- one
+- two|
+  - three
+```
+
+- keydown: `Cmd-Backspace`
+- assertState:
+
+```md
+- one
+- |
+  - three
+```
+
+# cmd+backspace should remove content only in notes
+
+- platform: `darwin`
+- applyState:
+
+```md
+- one
+  two|
+```
+
+- keydown: `Cmd-Backspace`
+- assertState:
+
+```md
+- one
+  |
 ```
 
 # cmd+backspace should remove note line if content is already empty

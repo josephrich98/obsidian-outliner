@@ -106,13 +106,13 @@ export function eraseEmptyListItem(editor: MyEditor): boolean {
 }
 
 /**
- * Erases everything before the cursor on a checkbox item line, including the
+ * Erases everything before the cursor on a list item line, including the
  * checkbox and the bullet. With the cursor at the end of the line it turns the
  * whole item into an empty line.
  *
  * Returns true if something was erased.
  */
-export function eraseCheckboxItemTillCursor(editor: MyEditor): boolean {
+export function eraseListItemTillCursor(editor: MyEditor): boolean {
   const cursor = getCursor(editor);
 
   if (!cursor) {
@@ -121,7 +121,7 @@ export function eraseCheckboxItemTillCursor(editor: MyEditor): boolean {
 
   const item = parseListItemUnderCursor(editor, cursor);
 
-  if (!item || item.checkbox.length === 0 || hasChildrenOrNotes(editor, item)) {
+  if (!item || hasChildrenOrNotes(editor, item)) {
     return false;
   }
 
