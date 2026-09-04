@@ -1,4 +1,4 @@
-# backspace should work as regular if it's last empty line
+# backspace should erase the bullet if it's the last empty line
 
 - applyState:
 
@@ -10,7 +10,7 @@
 - assertState:
 
 ```md
--|
+|
 ```
 
 # backspace should work as regular if it's first line without children
@@ -62,7 +62,7 @@
 - qw|
 ```
 
-# backspace should remove list item if it's empty
+# backspace should erase the bullet if the item is empty
 
 - applyState:
 
@@ -75,7 +75,59 @@
 - assertState:
 
 ```md
-- one|
+- one
+|
+```
+
+# backspace should erase the checkbox if the item is empty
+
+- applyState:
+
+```md
+- one
+- [ ] |
+```
+
+- keydown: `Backspace`
+- assertState:
+
+```md
+- one
+|
+```
+
+# backspace should erase the bullet of a nested empty item
+
+- applyState:
+
+```md
+- one
+  - |
+```
+
+- keydown: `Backspace`
+- assertState:
+
+```md
+- one
+|
+```
+
+# backspace should not erase the bullet if the empty item has children
+
+- applyState:
+
+```md
+- |
+  - two
+```
+
+- keydown: `Backspace`
+- assertState:
+
+```md
+- |
+  - two
 ```
 
 # backspace should remove note line if it's empty

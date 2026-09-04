@@ -11,6 +11,10 @@ import { IMEDetector } from "../services/IMEDetector";
 import { OperationPerformer } from "../services/OperationPerformer";
 import { Settings } from "../services/Settings";
 import { createKeymapRunCallback } from "../utils/createKeymapRunCallback";
+import {
+  eraseCheckboxItemTillCursor,
+  eraseEmptyListItem,
+} from "../utils/eraseListItem";
 
 export class MetaBackspaceBehaviourOverride implements Feature {
   constructor(
@@ -44,6 +48,18 @@ export class MetaBackspaceBehaviourOverride implements Feature {
   };
 
   private run = (editor: MyEditor) => {
+    // An empty list item is erased instead of being merged with the previous
+    // one, leaving an empty line behind.
+    if (eraseEmptyListItem(editor)) {
+      return { shouldUpdate: true, shouldStopPropagation: true };
+    }
+
+    // On a checkbox item the checkbox and the bullet are erased together with
+    // the content, leaving an empty line.
+    if (eraseCheckboxItemTillCursor(editor)) {
+      return { shouldUpdate: true, shouldStopPropagation: true };
+    }
+
     const res = this.operationPerformer.perform(
       (root) => new DeleteTillCurrentLineContentStart(root),
       editor,

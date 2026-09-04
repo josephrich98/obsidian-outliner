@@ -11,16 +11,48 @@ export interface EditorMockParams {
 }
 
 export function makeEditor(params: EditorMockParams): MyEditor {
-  const text = params.text;
-  const cursor = { ...params.cursor };
+  let text = params.text;
+  let cursor = { ...params.cursor };
+  let selections = [{ anchor: { ...cursor }, head: { ...cursor } }];
 
   const editor: any = {
     getCursor: () => cursor,
-    listSelections: () => [{ anchor: cursor, head: cursor }],
+    listSelections: () => selections,
+    setSelections: (newSelections: any[]) => {
+      selections = newSelections.map((s) => ({
+        anchor: { ...s.anchor },
+        head: { ...s.head },
+      }));
+      cursor = { ...selections[selections.length - 1].head };
+    },
     getLine: (l: number) => text.split("\n")[l],
+    getValue: () => text,
+    posToOffset: (pos: { line: number; ch: number }) => {
+      const lines = text.split("\n");
+      let offset = 0;
+      for (let i = 0; i < pos.line; i++) {
+        offset += lines[i].length + 1;
+      }
+      return offset + pos.ch;
+    },
+    replaceRange: (
+      replacement: string,
+      from: { line: number; ch: number },
+      to: { line: number; ch: number },
+    ) => {
+      const fromOffset = editor.posToOffset(from);
+      const toOffset = editor.posToOffset(to);
+      text = text.slice(0, fromOffset) + replacement + text.slice(toOffset);
+    },
+    getRange: (
+      from: { line: number; ch: number },
+      to: { line: number; ch: number },
+    ) => text.slice(editor.posToOffset(from), editor.posToOffset(to)),
     lastLine: () => text.split("\n").length - 1,
     lineCount: () => text.split("\n").length,
     getAllFoldedLines: params.getAllFoldedLines || (() => []),
+    fold: (): void => undefined,
+    unfold: (): void => undefined,
   };
 
   return editor;

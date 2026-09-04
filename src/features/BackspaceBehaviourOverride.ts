@@ -10,6 +10,7 @@ import { IMEDetector } from "../services/IMEDetector";
 import { OperationPerformer } from "../services/OperationPerformer";
 import { Settings } from "../services/Settings";
 import { createKeymapRunCallback } from "../utils/createKeymapRunCallback";
+import { eraseEmptyListItem } from "../utils/eraseListItem";
 
 export class BackspaceBehaviourOverride implements Feature {
   constructor(
@@ -43,6 +44,12 @@ export class BackspaceBehaviourOverride implements Feature {
   };
 
   private run = (editor: MyEditor) => {
+    // An empty list item is erased instead of being merged with the previous
+    // one, leaving an empty line behind.
+    if (eraseEmptyListItem(editor)) {
+      return { shouldUpdate: true, shouldStopPropagation: true };
+    }
+
     return this.operationPerformer.perform(
       (root) => new DeleteTillPreviousLineContentEnd(root),
       editor,
