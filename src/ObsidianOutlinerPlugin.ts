@@ -9,6 +9,7 @@ import { DragAndDrop } from "./features/DragAndDrop";
 import { EditorSelectionsBehaviourOverride } from "./features/EditorSelectionsBehaviourOverride";
 import { EnterBehaviourOverride } from "./features/EnterBehaviourOverride";
 import { Feature } from "./features/Feature";
+import { ListsCheckboxCommands } from "./features/ListsCheckboxCommands";
 import { ListsFoldingCommands } from "./features/ListsFoldingCommands";
 import { ListsMovementCommands } from "./features/ListsMovementCommands";
 import { MetaBackspaceBehaviourOverride } from "./features/MetaBackspaceBehaviourOverride";
@@ -72,6 +73,7 @@ export default class ObsidianOutlinerPlugin extends Plugin {
         this.operationPerformer,
       ),
       new ListsFoldingCommands(this, this.obsidianSettings),
+      new ListsCheckboxCommands(this),
 
       // features based on settings.keepCursorWithinContent
       new EditorSelectionsBehaviourOverride(this, this.settings, this.parser),

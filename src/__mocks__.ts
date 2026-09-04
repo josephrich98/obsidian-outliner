@@ -48,6 +48,17 @@ export function makeEditor(params: EditorMockParams): MyEditor {
       from: { line: number; ch: number },
       to: { line: number; ch: number },
     ) => text.slice(editor.posToOffset(from), editor.posToOffset(to)),
+    transaction: (tx: any) => {
+      const changes = [...tx.changes].sort(
+        (a, b) => editor.posToOffset(b.from) - editor.posToOffset(a.from),
+      );
+      for (const change of changes) {
+        editor.replaceRange(change.text, change.from, change.to || change.from);
+      }
+      if (tx.selections) {
+        editor.setSelections(tx.selections);
+      }
+    },
     lastLine: () => text.split("\n").length - 1,
     lineCount: () => text.split("\n").length,
     getAllFoldedLines: params.getAllFoldedLines || (() => []),

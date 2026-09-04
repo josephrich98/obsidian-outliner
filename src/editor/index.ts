@@ -24,6 +24,17 @@ export class MyEditorSelection {
   head: MyEditorPosition;
 }
 
+export class MyEditorChange {
+  from: MyEditorPosition;
+  to: MyEditorPosition;
+  text: string;
+}
+
+export class MyEditorTransaction {
+  changes: MyEditorChange[];
+  selections: MyEditorSelection[];
+}
+
 export function getEditorFromState(state: EditorState) {
   const { editor } = state.field(editorInfoField);
 
@@ -91,6 +102,20 @@ export class MyEditor {
 
   setSelections(selections: MyEditorSelection[]): void {
     this.e.setSelections(selections);
+  }
+
+  /**
+   * Applies the changes and the selections at once, so that the editor doesn't
+   * go through the intermediate states and everything is undone in one step.
+   */
+  transaction(tx: MyEditorTransaction): void {
+    this.e.transaction({
+      changes: tx.changes,
+      selections: tx.selections.map(({ anchor, head }) => ({
+        from: anchor,
+        to: head,
+      })),
+    });
   }
 
   setValue(text: string): void {
