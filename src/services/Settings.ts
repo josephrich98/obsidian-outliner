@@ -11,6 +11,7 @@ interface SettingsObject {
   betterEnter: boolean;
   betterVimO: boolean;
   betterTab: boolean;
+  metaBackspaceErasesItem: boolean;
   selectAll: boolean;
   listLines: boolean;
   listLineAction: VerticalLinesAction;
@@ -25,6 +26,7 @@ const DEFAULT_SETTINGS: SettingsObject = {
   betterEnter: true,
   betterVimO: true,
   betterTab: true,
+  metaBackspaceErasesItem: true,
   selectAll: true,
   listLines: false,
   listLineAction: "toggle-folding",
@@ -86,6 +88,14 @@ export class Settings {
 
   set overrideVimOBehaviour(value: boolean) {
     this.set("betterVimO", value);
+  }
+
+  get metaBackspaceErasesWholeItem() {
+    return this.values.metaBackspaceErasesItem;
+  }
+
+  set metaBackspaceErasesWholeItem(value: boolean) {
+    this.set("metaBackspaceErasesItem", value);
   }
 
   get overrideSelectAllBehaviour() {

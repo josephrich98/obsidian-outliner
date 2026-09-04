@@ -64,6 +64,20 @@ class ObsidianOutlinerPluginSettingTab extends PluginSettingTab {
       });
 
     new Setting(containerEl)
+      .setName("Cmd+Backspace erases the whole item")
+      .setDesc(
+        "Erase the bullet or the checkbox together with the text. Turn it off to erase the text only and keep the bullet.",
+      )
+      .addToggle((toggle) => {
+        toggle
+          .setValue(this.settings.metaBackspaceErasesWholeItem)
+          .onChange(async (value) => {
+            this.settings.metaBackspaceErasesWholeItem = value;
+            await this.settings.save();
+          });
+      });
+
+    new Setting(containerEl)
       .setName("Vim-mode o/O inserts bullets")
       .setDesc("Create a bullet when pressing o or O in Vim mode.")
       .addToggle((toggle) => {

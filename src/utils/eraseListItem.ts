@@ -71,9 +71,16 @@ function hasChildrenOrNotes(editor: MyEditor, item: ParsedListItem) {
   );
 }
 
-function eraseTill(editor: MyEditor, line: number, ch: number) {
-  editor.replaceRange("", { line, ch: 0 }, { line, ch });
-  editor.setSelections([{ anchor: { line, ch: 0 }, head: { line, ch: 0 } }]);
+function eraseRange(
+  editor: MyEditor,
+  line: number,
+  fromCh: number,
+  tillCh: number,
+) {
+  editor.replaceRange("", { line, ch: fromCh }, { line, ch: tillCh });
+  editor.setSelections([
+    { anchor: { line, ch: fromCh }, head: { line, ch: fromCh } },
+  ]);
 }
 
 /**
@@ -100,19 +107,23 @@ export function eraseEmptyListItem(editor: MyEditor): boolean {
     return false;
   }
 
-  eraseTill(editor, item.line, item.lineText.length);
+  eraseRange(editor, item.line, 0, item.lineText.length);
 
   return true;
 }
 
 /**
- * Erases everything before the cursor on a list item line, including the
- * checkbox and the bullet. With the cursor at the end of the line it turns the
- * whole item into an empty line.
+ * Erases everything before the cursor on a list item line. The bullet and the
+ * checkbox are erased as well, so with the cursor at the end of the line the
+ * whole item turns into an empty line. With `keepMarker` the erasing stops at
+ * the bullet and the checkbox, clearing the content only.
  *
  * Returns true if something was erased.
  */
-export function eraseListItemTillCursor(editor: MyEditor): boolean {
+export function eraseListItemTillCursor(
+  editor: MyEditor,
+  keepMarker = false,
+): boolean {
   const cursor = getCursor(editor);
 
   if (!cursor) {
@@ -121,17 +132,30 @@ export function eraseListItemTillCursor(editor: MyEditor): boolean {
 
   const item = parseListItemUnderCursor(editor, cursor);
 
-  if (!item || hasChildrenOrNotes(editor, item)) {
+  if (!item) {
     return false;
   }
+
+  const markerEndCh = item.contentStartCh + item.checkbox.length;
 
   // The cursor is inside the checkbox marker itself, erasing till the cursor
   // would leave a dangling checkbox behind.
-  if (cursor.ch < item.contentStartCh + item.checkbox.length) {
+  if (cursor.ch < markerEndCh) {
     return false;
   }
 
-  eraseTill(editor, item.line, cursor.ch);
+  // The marker is kept, so children and notes of the item stay attached to it.
+  if (!keepMarker && hasChildrenOrNotes(editor, item)) {
+    return false;
+  }
+
+  const eraseFromCh = keepMarker ? markerEndCh : 0;
+
+  if (cursor.ch <= eraseFromCh) {
+    return false;
+  }
+
+  eraseRange(editor, item.line, eraseFromCh, cursor.ch);
 
   return true;
 }

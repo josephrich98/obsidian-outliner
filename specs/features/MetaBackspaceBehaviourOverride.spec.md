@@ -159,3 +159,61 @@
 - |one
   - two
 ```
+
+# cmd+backspace should remove content only when the setting is off
+
+- platform: `darwin`
+- setting: `metaBackspaceErasesItem=false`
+- applyState:
+
+```md
+- one
+- two|
+```
+
+- keydown: `Cmd-Backspace`
+- assertState:
+
+```md
+- one
+- |
+```
+
+# cmd+backspace should keep the checkbox when the setting is off
+
+- platform: `darwin`
+- setting: `metaBackspaceErasesItem=false`
+- applyState:
+
+```md
+- one
+- [ ] two|
+```
+
+- keydown: `Cmd-Backspace`
+- assertState:
+
+```md
+- one
+- [ ] |
+```
+
+# cmd+backspace should erase the empty item when the setting is off
+
+- platform: `darwin`
+- setting: `metaBackspaceErasesItem=false`
+- applyState:
+
+```md
+- one
+- two|
+```
+
+- keydown: `Cmd-Backspace`
+- keydown: `Cmd-Backspace`
+- assertState:
+
+```md
+- one
+|
+```

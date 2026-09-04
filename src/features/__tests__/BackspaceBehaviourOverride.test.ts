@@ -9,12 +9,17 @@ import { MetaBackspaceBehaviourOverride } from "../MetaBackspaceBehaviourOverrid
 /* eslint-disable @typescript-eslint/no-explicit-any */
 jest.mock("obsidian", () => ({}), { virtual: true });
 
-const settings: any = {
+const makeSettings = (metaBackspaceErasesWholeItem = true): any => ({
   keepCursorWithinContent: "bullet-and-checkbox",
   stickCursor: "bullet-and-checkbox",
-};
+  metaBackspaceErasesWholeItem,
+});
 
-function pressBackspace(editor: MyEditor, meta: boolean): void {
+function pressBackspace(
+  editor: MyEditor,
+  meta: boolean,
+  settings: any = makeSettings(),
+): void {
   const plugin: any = { registerEditorExtension: (): void => undefined };
   const imeDetector: any = { isOpened: (): boolean => false };
   const operationPerformer = new OperationPerformer(
@@ -146,4 +151,52 @@ test("backspace on a bullet with text still merges with the item above", () => {
   pressBackspace(editor, false);
 
   expect(getText(editor)).toBe("- onetwo\n");
+});
+
+describe("with the whole item erasing turned off", () => {
+  const settings = makeSettings(false);
+
+  test("cmd+backspace on a bullet with text keeps the bullet", () => {
+    const editor = makeEditor({
+      text: "- one\n- two\n",
+      cursor: { line: 1, ch: 5 },
+    });
+
+    pressBackspace(editor, true, settings);
+
+    expect(getText(editor)).toBe("- one\n- \n");
+  });
+
+  test("cmd+backspace on a checkbox with text keeps the checkbox", () => {
+    const editor = makeEditor({
+      text: "- one\n- [ ] two\n",
+      cursor: { line: 1, ch: 9 },
+    });
+
+    pressBackspace(editor, true, settings);
+
+    expect(getText(editor)).toBe("- one\n- [ ] \n");
+  });
+
+  test("cmd+backspace still erases an already empty item", () => {
+    const editor = makeEditor({
+      text: "- one\n- \n",
+      cursor: { line: 1, ch: 2 },
+    });
+
+    pressBackspace(editor, true, settings);
+
+    expect(getText(editor)).toBe("- one\n\n");
+  });
+
+  test("backspace on an empty bullet is not affected", () => {
+    const editor = makeEditor({
+      text: "- one\n- \n",
+      cursor: { line: 1, ch: 2 },
+    });
+
+    pressBackspace(editor, false, settings);
+
+    expect(getText(editor)).toBe("- one\n\n");
+  });
 });

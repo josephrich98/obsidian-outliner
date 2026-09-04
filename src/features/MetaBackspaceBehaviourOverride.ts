@@ -55,8 +55,14 @@ export class MetaBackspaceBehaviourOverride implements Feature {
     }
 
     // The bullet and the checkbox are erased together with the content, so a
-    // whole item is cleared in one keystroke.
-    if (eraseListItemTillCursor(editor)) {
+    // whole item is cleared in one keystroke. When the setting is off only the
+    // content is cleared and the item itself is kept.
+    if (
+      eraseListItemTillCursor(
+        editor,
+        !this.settings.metaBackspaceErasesWholeItem,
+      )
+    ) {
       return { shouldUpdate: true, shouldStopPropagation: true };
     }
 
