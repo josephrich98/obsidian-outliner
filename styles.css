@@ -103,3 +103,16 @@ body.outliner-plugin-dnd:not(.outliner-plugin-dragging)
 html body.outliner-plugin-dnd.outliner-plugin-dragging {
   cursor: grabbing !important;
 }
+
+/* alert lines: "- [ ] ! pay the rent" */
+.markdown-source-view.mod-cm6 .cm-line.outliner-plugin-alert-line,
+.markdown-source-view.mod-cm6 .cm-line.outliner-plugin-alert-line span,
+.markdown-rendered li.outliner-plugin-alert-line {
+  color: var(--outliner-alert-color, #774142);
+}
+
+/* the items nested under an alert keep the normal colour */
+.markdown-rendered li.outliner-plugin-alert-line ul,
+.markdown-rendered li.outliner-plugin-alert-line ol {
+  color: var(--text-normal);
+}

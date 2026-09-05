@@ -1,5 +1,6 @@
 import { Plugin } from "obsidian";
 
+import { AlertLinesHighlight } from "./features/AlertLinesHighlight";
 import { ArrowLeftAndCtrlArrowLeftBehaviourOverride } from "./features/ArrowLeftAndCtrlArrowLeftBehaviourOverride";
 import { BackspaceBehaviourOverride } from "./features/BackspaceBehaviourOverride";
 import { BetterListsStyles } from "./features/BetterListsStyles";
@@ -9,6 +10,7 @@ import { DragAndDrop } from "./features/DragAndDrop";
 import { EditorSelectionsBehaviourOverride } from "./features/EditorSelectionsBehaviourOverride";
 import { EnterBehaviourOverride } from "./features/EnterBehaviourOverride";
 import { Feature } from "./features/Feature";
+import { ListsAlertCommands } from "./features/ListsAlertCommands";
 import { ListsCheckboxCommands } from "./features/ListsCheckboxCommands";
 import { ListsFoldingCommands } from "./features/ListsFoldingCommands";
 import { ListsMovementCommands } from "./features/ListsMovementCommands";
@@ -74,6 +76,8 @@ export default class ObsidianOutlinerPlugin extends Plugin {
       ),
       new ListsFoldingCommands(this, this.obsidianSettings),
       new ListsCheckboxCommands(this),
+      new ListsAlertCommands(this),
+      new AlertLinesHighlight(this),
 
       // features based on settings.keepCursorWithinContent
       new EditorSelectionsBehaviourOverride(this, this.settings, this.parser),
