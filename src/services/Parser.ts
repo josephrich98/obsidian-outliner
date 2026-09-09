@@ -7,6 +7,7 @@ import { checkboxRe } from "../utils/checkboxRe";
 const bulletSignRe = `(?:[-*+]|\\d+\\.)`;
 const optionalCheckboxRe = `(?:${checkboxRe})?`;
 
+const listItemWithoutSpacesRe = new RegExp(`^${bulletSignRe}( |\t)`);
 const listItemRe = new RegExp(`^[ \t]*${bulletSignRe}( |\t)`);
 const stringWithSpacesRe = new RegExp(`^[ \t]+`);
 const parseListItemRe = new RegExp(
@@ -106,8 +107,12 @@ export class Parser {
       return null;
     }
 
-    // The list starts at the topmost list item of the block. It doesn't have
-    // to be unindented: a lone bullet indented with Tab is still a list.
+    // The list starts at the topmost list item of the block. With the free
+    // indentation it doesn't have to be unindented: a lone bullet indented
+    // with Tab is still a list.
+    const isListStart = this.settings.freeIndentation
+      ? this.isListItem
+      : this.isListItemWithoutSpaces;
     let listStartLine: number | null = null;
     let listStartLineLookup = listLookingPos;
     while (listStartLineLookup >= 0) {
@@ -115,7 +120,7 @@ export class Parser {
       if (!this.isListItem(line) && !this.isLineWithIndent(line)) {
         break;
       }
-      if (this.isListItem(line)) {
+      if (isListStart(line)) {
         listStartLine = listStartLineLookup;
         if (listStartLineLookup <= limitFrom) {
           break;
@@ -289,7 +294,11 @@ export class Parser {
     return stringWithSpacesRe.test(line);
   }
 
-  private isListItem(line: string) {
+  private isListItem = (line: string) => {
     return listItemRe.test(line);
-  }
+  };
+
+  private isListItemWithoutSpaces = (line: string) => {
+    return listItemWithoutSpacesRe.test(line);
+  };
 }

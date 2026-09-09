@@ -1,6 +1,6 @@
 import { Operation } from "./Operation";
 
-import { Root, recalculateNumericBullets } from "../root";
+import { List, Root, recalculateNumericBullets } from "../root";
 import { getIndentChars } from "../utils/getIndentChars";
 
 export class IndentList implements Operation {
@@ -47,12 +47,9 @@ export class IndentList implements Operation {
     const listStartLineBefore = root.getContentLinesRangeOf(list)[0];
 
     const indentPos = list.getFirstLineIndent().length;
-    const indentChars = getIndentChars(
-      list,
-      parent,
-      prev,
-      this.defaultIndentChars,
-    );
+    const indentChars = this.freeIndentation
+      ? getIndentChars(list, parent, prev, this.defaultIndentChars)
+      : this.getOriginalIndentChars(list, parent, prev);
 
     if (prev) {
       parent.removeChild(list);
@@ -71,5 +68,34 @@ export class IndentList implements Operation {
     });
 
     recalculateNumericBullets(root);
+  }
+
+  // The indent detection as it was before the free indentation, kept as is
+  // for the strict outliner behaviour.
+  private getOriginalIndentChars(list: List, parent: List, prev: List) {
+    let indentChars = "";
+
+    if (indentChars === "" && !prev.isEmpty()) {
+      indentChars = prev
+        .getChildren()[0]
+        .getFirstLineIndent()
+        .slice(prev.getFirstLineIndent().length);
+    }
+
+    if (indentChars === "") {
+      indentChars = list
+        .getFirstLineIndent()
+        .slice(parent.getFirstLineIndent().length);
+    }
+
+    if (indentChars === "" && !list.isEmpty()) {
+      indentChars = list.getChildren()[0].getFirstLineIndent();
+    }
+
+    if (indentChars === "") {
+      indentChars = this.defaultIndentChars;
+    }
+
+    return indentChars;
   }
 }

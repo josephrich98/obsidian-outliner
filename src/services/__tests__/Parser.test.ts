@@ -180,4 +180,16 @@ describe("parseList", () => {
     );
     expect(list.print()).toBe("\t- one\n\t\t- two\n\t- three");
   });
+
+  test("should not parse list whose first item is indented when the free indentation is off", () => {
+    const settings = makeSettings();
+    (settings as any).freeIndentation = false;
+    const parser = makeParser({ settings });
+    const editor = makeEditor({
+      text: "\t- one\n\t\t- two",
+      cursor: { line: 0, ch: 0 },
+    });
+
+    expect(parser.parse(editor as any)).toBeNull();
+  });
 });

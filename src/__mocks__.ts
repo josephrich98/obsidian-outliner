@@ -85,6 +85,7 @@ export function makeLogger(): Logger {
 export function makeSettings(): Settings {
   const settings: any = {
     stickCursor: "bullet-and-checkbox",
+    freeIndentation: true,
   };
   return settings;
 }
