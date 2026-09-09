@@ -43,6 +43,15 @@ export class ObsidianSettings {
     };
   }
 
+  isIndentGuideShown(): boolean {
+    const config: { showIndentGuide: boolean } = {
+      showIndentGuide: true,
+      ...getHiddenObsidianConfig(this.app),
+    };
+
+    return config.showIndentGuide;
+  }
+
   getFoldSettings(): ObsidianFoldSettings {
     return {
       foldIndent: true,

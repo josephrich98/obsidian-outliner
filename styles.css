@@ -125,6 +125,10 @@ html body.outliner-plugin-dnd.outliner-plugin-dragging {
   font-size: var(--font-text-size);
   color: var(--text-normal);
   padding-inline-start: 0;
+  /* same as Obsidian's .HyperMD-list-line: a tab is one list level wide */
+  tab-size: var(--list-indent);
+  padding-top: var(--list-spacing);
+  padding-bottom: var(--list-spacing);
 }
 
 .markdown-source-view.mod-cm6

@@ -14,6 +14,8 @@ import {
 
 import { Feature } from "./Feature";
 
+import { ObsidianSettings } from "../services/ObsidianSettings";
+
 const LINE_CLASS = "outliner-plugin-over-indented-line";
 
 // indent, bullet, space after the bullet, optional checkbox with its char
@@ -130,7 +132,10 @@ function isLineSelected(state: EditorState, from: number, to: number) {
 class OverIndentedItemsPluginValue implements PluginValue {
   decorations: DecorationSet;
 
-  constructor(view: EditorView) {
+  constructor(
+    private obsidianSettings: ObsidianSettings,
+    view: EditorView,
+  ) {
     this.decorations = this.buildDecorations(view);
   }
 
@@ -148,6 +153,9 @@ class OverIndentedItemsPluginValue implements PluginValue {
   private buildDecorations(view: EditorView): DecorationSet {
     const builder = new RangeSetBuilder<Decoration>();
     const { state } = view;
+    // With the guides off Obsidian leaves the indent as raw whitespace, and
+    // the list levels are simply as wide as the tabs or spaces are.
+    const layOutIndent = this.obsidianSettings.isIndentGuideShown();
 
     for (const { from, to } of view.visibleRanges) {
       let pos = from;
@@ -188,7 +196,7 @@ class OverIndentedItemsPluginValue implements PluginValue {
         // Inside a list Obsidian already lays the indent out in list levels.
         // Elsewhere (an indented item with nothing above it) do it ourselves,
         // so that the item lines up with the regular items of that depth.
-        if (!hasToken(state, line.from, "hmd-list-indent")) {
+        if (layOutIndent && !hasToken(state, line.from, "hmd-list-indent")) {
           builder.add(line.from, bulletFrom, listIndent);
           let unitFrom = line.from;
           for (const { len, unit } of getIndentUnits(indent)) {
@@ -239,13 +247,19 @@ class OverIndentedItemsPluginValue implements PluginValue {
  * Preview, the way Obsidian draws them for regular items.
  */
 export class OverIndentedItemsRendering implements Feature {
-  constructor(private plugin: Plugin) {}
+  constructor(
+    private plugin: Plugin,
+    private obsidianSettings: ObsidianSettings,
+  ) {}
 
   async load() {
     this.plugin.registerEditorExtension(
-      ViewPlugin.fromClass(OverIndentedItemsPluginValue, {
-        decorations: (v) => v.decorations,
-      }),
+      ViewPlugin.define(
+        (view) => new OverIndentedItemsPluginValue(this.obsidianSettings, view),
+        {
+          decorations: (v) => v.decorations,
+        },
+      ),
     );
   }
 
