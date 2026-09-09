@@ -15,6 +15,7 @@ import { ListsCheckboxCommands } from "./features/ListsCheckboxCommands";
 import { ListsFoldingCommands } from "./features/ListsFoldingCommands";
 import { ListsMovementCommands } from "./features/ListsMovementCommands";
 import { MetaBackspaceBehaviourOverride } from "./features/MetaBackspaceBehaviourOverride";
+import { OverIndentedItemsRendering } from "./features/OverIndentedItemsRendering";
 // import { ReleaseNotesAnnouncement } from "./features/ReleaseNotesAnnouncement";
 import { SettingsTab } from "./features/SettingsTab";
 import { ShiftTabBehaviourOverride } from "./features/ShiftTabBehaviourOverride";
@@ -78,6 +79,7 @@ export default class ObsidianOutlinerPlugin extends Plugin {
       new ListsCheckboxCommands(this),
       new ListsAlertCommands(this),
       new AlertLinesHighlight(this),
+      new OverIndentedItemsRendering(this),
 
       // features based on settings.keepCursorWithinContent
       new EditorSelectionsBehaviourOverride(this, this.settings, this.parser),
@@ -117,6 +119,7 @@ export default class ObsidianOutlinerPlugin extends Plugin {
       new ShiftTabBehaviourOverride(
         this,
         this.imeDetector,
+        this.obsidianSettings,
         this.settings,
         this.operationPerformer,
       ),

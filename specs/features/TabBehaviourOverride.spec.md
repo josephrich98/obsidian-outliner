@@ -34,7 +34,7 @@
     - qwe
 ```
 
-# Tab should not indent line if it's no parent
+# Tab should indent line deeper when there is no previous sibling
 
 - applyState:
 
@@ -48,7 +48,56 @@
 
 ```md
 - qwe
+    - qwe|
+```
+
+# Tab should indent an already over-indented line by one more step
+
+- applyState:
+
+```md
+- qwe
+    - qwe|
+```
+
+- keydown: `Tab`
+- assertState:
+
+```md
+- qwe
+      - qwe|
+```
+
+# Tab should indent the first line of a list in place
+
+- applyState:
+
+```md
+- qwe|
+- qwe
+```
+
+- keydown: `Tab`
+- assertState:
+
+```md
   - qwe|
+- qwe
+```
+
+# Tab should indent a lone bullet repeatedly
+
+- applyState:
+
+```md
+  - qwe|
+```
+
+- keydown: `Tab`
+- assertState:
+
+```md
+    - qwe|
 ```
 
 # Tab should keep cursor at the same text position

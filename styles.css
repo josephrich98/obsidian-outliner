@@ -116,3 +116,37 @@ html body.outliner-plugin-dnd.outliner-plugin-dragging {
 .markdown-rendered li.outliner-plugin-alert-line ol {
   color: var(--text-normal);
 }
+
+/* items indented further than Markdown allows, see OverIndentedItemsRendering */
+.markdown-source-view.mod-cm6 .cm-line.outliner-plugin-over-indented-line,
+.markdown-source-view.mod-cm6
+  .cm-line.outliner-plugin-over-indented-line.HyperMD-codeblock {
+  font-family: var(--font-text);
+  font-size: var(--font-text-size);
+  color: var(--text-normal);
+  padding-inline-start: 0;
+}
+
+.markdown-source-view.mod-cm6
+  .cm-line.outliner-plugin-over-indented-line
+  .cm-hmd-codeblock,
+.markdown-source-view.mod-cm6
+  .cm-line.outliner-plugin-over-indented-line
+  .cm-hmd-indented-code,
+.markdown-source-view.mod-cm6
+  .cm-line.outliner-plugin-over-indented-line
+  span.cm-inline-code {
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+  background-color: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+}
+
+.markdown-source-view.mod-cm6
+  .cm-line.outliner-plugin-over-indented-line.HyperMD-codeblock-bg {
+  background-color: transparent;
+  border: none;
+}

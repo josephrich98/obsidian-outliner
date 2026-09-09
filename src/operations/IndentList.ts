@@ -1,6 +1,7 @@
 import { Operation } from "./Operation";
 
 import { Root, recalculateNumericBullets } from "../root";
+import { getIndentChars } from "../utils/getIndentChars";
 
 export class IndentList implements Operation {
   private stopPropagation = false;
@@ -32,40 +33,26 @@ export class IndentList implements Operation {
     const parent = list.getParent();
     const prev = parent.getPrevSiblingOf(list);
 
-    if (!prev) {
-      return;
-    }
-
+    // Without a previous sibling there is nothing to become a child of, but
+    // the item can still be indented one more step in place, the way a plain
+    // Markdown list indents.
     this.updated = true;
 
     const listStartLineBefore = root.getContentLinesRangeOf(list)[0];
 
     const indentPos = list.getFirstLineIndent().length;
-    let indentChars = "";
+    const indentChars = getIndentChars(
+      list,
+      parent,
+      prev,
+      this.defaultIndentChars,
+    );
 
-    if (indentChars === "" && !prev.isEmpty()) {
-      indentChars = prev
-        .getChildren()[0]
-        .getFirstLineIndent()
-        .slice(prev.getFirstLineIndent().length);
+    if (prev) {
+      parent.removeChild(list);
+      prev.addAfterAll(list);
     }
 
-    if (indentChars === "") {
-      indentChars = list
-        .getFirstLineIndent()
-        .slice(parent.getFirstLineIndent().length);
-    }
-
-    if (indentChars === "" && !list.isEmpty()) {
-      indentChars = list.getChildren()[0].getFirstLineIndent();
-    }
-
-    if (indentChars === "") {
-      indentChars = this.defaultIndentChars;
-    }
-
-    parent.removeChild(list);
-    prev.addAfterAll(list);
     list.indentContent(indentPos, indentChars);
 
     const listStartLineAfter = root.getContentLinesRangeOf(list)[0];

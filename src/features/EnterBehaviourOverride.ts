@@ -60,7 +60,10 @@ export class EnterBehaviourOverride implements Feature {
     {
       const res = this.operationPerformer.eval(
         root,
-        new OutdentListIfItsEmpty(root),
+        new OutdentListIfItsEmpty(
+          root,
+          this.obsidianSettings.getDefaultIndentChars(),
+        ),
         editor,
       );
 

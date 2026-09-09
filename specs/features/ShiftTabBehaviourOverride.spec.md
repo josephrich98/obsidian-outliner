@@ -56,3 +56,50 @@
   - qwe
 - qwe|
 ```
+
+# Shift-Tab should outdent an over-indented line by one step
+
+- applyState:
+
+```md
+- qwe
+      - qwe|
+```
+
+- keydown: `Shift-Tab`
+- assertState:
+
+```md
+- qwe
+    - qwe|
+```
+
+# Shift-Tab should remove the indent of a lone bullet
+
+- applyState:
+
+```md
+    - qwe|
+```
+
+- keydown: `Shift-Tab`
+- assertState:
+
+```md
+  - qwe|
+```
+
+# Shift-Tab should do nothing on an unindented lone bullet
+
+- applyState:
+
+```md
+- qwe|
+```
+
+- keydown: `Shift-Tab`
+- assertState:
+
+```md
+- qwe|
+```

@@ -19,7 +19,7 @@ describe("IndentList operation", () => {
     expect(root.getCursor().ch).toBe(7); // cursor moved by indent length
   });
 
-  test("should not indent a list item if it has no previous sibling", () => {
+  test("should indent a top level item without a previous sibling in place", () => {
     const root = makeRoot({
       editor: makeEditor({
         text: "- item 1\n- item 2\n- item 3\n",
@@ -31,9 +31,25 @@ describe("IndentList operation", () => {
     const op = new IndentList(root, "  ");
     op.perform();
 
-    expect(root.print()).toBe("- item 1\n- item 2\n- item 3");
+    expect(root.print()).toBe("  - item 1\n- item 2\n- item 3");
     expect(root.getCursor().line).toBe(0);
-    expect(root.getCursor().ch).toBe(5); // cursor should remain unchanged
+    expect(root.getCursor().ch).toBe(7);
+  });
+
+  test("should indent a lone bullet repeatedly", () => {
+    const root = makeRoot({
+      editor: makeEditor({
+        text: "\t- item 1\n",
+        cursor: { line: 0, ch: 5 },
+      }),
+      settings: makeSettings(),
+    });
+
+    const op = new IndentList(root, "\t");
+    op.perform();
+
+    expect(root.print()).toBe("\t\t- item 1");
+    expect(root.getCursor().ch).toBe(6);
   });
 
   test("should indent a list item with its children", () => {
@@ -152,5 +168,69 @@ describe("IndentList operation", () => {
     expect(root.print()).toBe(
       "- item 1\n  - item 1.1\n  - item 1.2\n- item 2\n  - item 2.1\n  - item 3",
     );
+  });
+  test("should indent an only child one more step under its parent", () => {
+    const root = makeRoot({
+      editor: makeEditor({
+        text: "- item 1\n  - item 1.1\n",
+        cursor: { line: 1, ch: 6 },
+      }),
+      settings: makeSettings(),
+    });
+
+    const op = new IndentList(root, "  ");
+    op.perform();
+
+    expect(root.print()).toBe("- item 1\n    - item 1.1");
+    expect(root.getCursor().line).toBe(1);
+    expect(root.getCursor().ch).toBe(8);
+  });
+
+  test("should indent an already over-indented item by one step", () => {
+    const root = makeRoot({
+      editor: makeEditor({
+        text: "- item 1\n    - item 1.1\n",
+        cursor: { line: 1, ch: 8 },
+      }),
+      settings: makeSettings(),
+    });
+
+    const op = new IndentList(root, "  ");
+    op.perform();
+
+    expect(root.print()).toBe("- item 1\n      - item 1.1");
+    expect(root.getCursor().line).toBe(1);
+    expect(root.getCursor().ch).toBe(10);
+  });
+
+  test("should indent an only child together with its children", () => {
+    const root = makeRoot({
+      editor: makeEditor({
+        text: "- item 1\n  - item 1.1\n    - item 1.1.1\n",
+        cursor: { line: 1, ch: 6 },
+      }),
+      settings: makeSettings(),
+    });
+
+    const op = new IndentList(root, "\t");
+    op.perform();
+
+    expect(root.print()).toBe("- item 1\n    - item 1.1\n      - item 1.1.1");
+  });
+
+  test("should use the indent of a sibling instead of the default one", () => {
+    const root = makeRoot({
+      editor: makeEditor({
+        text: "- item 1\n  - item 1.1\n  - item 1.2\n",
+        cursor: { line: 1, ch: 6 },
+      }),
+      settings: makeSettings(),
+    });
+
+    const op = new IndentList(root, "\t");
+    op.perform();
+
+    expect(root.print()).toBe("- item 1\n    - item 1.1\n  - item 1.2");
+    expect(root.getCursor().ch).toBe(8);
   });
 });

@@ -114,4 +114,91 @@ describe("OutdentList operation", () => {
     expect(op.shouldStopPropagation()).toBe(true);
     expect(op.shouldUpdate()).toBe(true);
   });
+  test("should outdent an over-indented item by a single step", () => {
+    const root = makeRoot({
+      editor: makeEditor({
+        text: "- item 1\n      - item 1.1\n",
+        cursor: { line: 1, ch: 10 },
+      }),
+      settings: makeSettings(),
+    });
+
+    const op = new OutdentList(root, "  ");
+    op.perform();
+
+    expect(root.print()).toBe("- item 1\n    - item 1.1");
+    expect(root.getCursor().line).toBe(1);
+    expect(root.getCursor().ch).toBe(8);
+  });
+
+  test("should outdent an over-indented item together with its children", () => {
+    const root = makeRoot({
+      editor: makeEditor({
+        text: "- item 1\n      - item 1.1\n        - item 1.1.1\n",
+        cursor: { line: 1, ch: 10 },
+      }),
+      settings: makeSettings(),
+    });
+
+    const op = new OutdentList(root, "\t");
+    op.perform();
+
+    expect(root.print()).toBe("- item 1\n    - item 1.1\n      - item 1.1.1");
+  });
+
+  test("should use the indent of a sibling when outdenting an over-indented item", () => {
+    const root = makeRoot({
+      editor: makeEditor({
+        text: "- item 1\n    - item 1.1\n  - item 1.2\n",
+        cursor: { line: 1, ch: 8 },
+      }),
+      settings: makeSettings(),
+    });
+
+    const op = new OutdentList(root, "\t");
+    op.perform();
+
+    expect(root.print()).toBe("- item 1\n  - item 1.1\n  - item 1.2");
+    expect(root.getCursor().ch).toBe(6);
+  });
+
+  test("should move the item up the tree when it is exactly one step deep", () => {
+    const root = makeRoot({
+      editor: makeEditor({
+        text: "- item 1\n  - item 1.1\n",
+        cursor: { line: 1, ch: 6 },
+      }),
+      settings: makeSettings(),
+    });
+
+    const op = new OutdentList(root, "  ");
+    op.perform();
+
+    expect(root.print()).toBe("- item 1\n- item 1.1");
+    expect(root.getCursor().ch).toBe(4);
+  });
+  test("should remove the indent of an indented top level item", () => {
+    const root = makeRoot({
+      editor: makeEditor({
+        text: "\t\t- item 1\n",
+        cursor: { line: 0, ch: 6 },
+      }),
+      settings: makeSettings(),
+    });
+
+    const op = new OutdentList(root, "\t");
+    op.perform();
+    expect(root.print()).toBe("\t- item 1");
+    expect(root.getCursor().ch).toBe(5);
+
+    const op2 = new OutdentList(root, "\t");
+    op2.perform();
+    expect(root.print()).toBe("- item 1");
+    expect(root.getCursor().ch).toBe(4);
+
+    const op3 = new OutdentList(root, "\t");
+    op3.perform();
+    expect(root.print()).toBe("- item 1");
+    expect(op3.shouldUpdate()).toBe(false);
+  });
 });

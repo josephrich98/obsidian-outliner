@@ -106,7 +106,7 @@
     - qwe
 ```
 
-# obsidian-outliner:indent-list should not indent line if it's no parent
+# obsidian-outliner:indent-list should indent line deeper when there is no previous sibling
 
 - applyState:
 
@@ -120,7 +120,7 @@
 
 ```md
 - qwe
-  - qwe|
+    - qwe|
 ```
 
 # obsidian-outliner:indent-list should keep cursor at the same text position

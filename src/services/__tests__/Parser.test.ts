@@ -161,4 +161,23 @@ describe("parseList", () => {
     expect(logger.log).not.toHaveBeenCalled();
     expect(list).toBeTruthy();
   });
+  test("should parse list whose first item is indented", () => {
+    const parser = makeParser();
+    const editor = makeEditor({
+      text: "\t- one\n\t\t- two\n\t- three",
+      cursor: { line: 0, ch: 0 },
+    });
+
+    const list = parser.parse(editor as any);
+
+    expect(list).not.toBeNull();
+    expect(list.getChildren().map((l) => l.getFirstLineIndent())).toEqual([
+      "\t",
+      "\t",
+    ]);
+    expect(list.getChildren()[0].getChildren()[0].getFirstLineIndent()).toBe(
+      "\t\t",
+    );
+    expect(list.print()).toBe("\t- one\n\t\t- two\n\t- three");
+  });
 });
