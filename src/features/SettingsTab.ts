@@ -52,6 +52,20 @@ class ObsidianOutlinerPluginSettingTab extends PluginSettingTab {
       });
 
     new Setting(containerEl)
+      .setName("Indent beyond the list structure")
+      .setDesc(
+        "Let Tab indent an item further than one level below the item above it, and draw the bullet or the checkbox of such items in Live Preview. Turn it off for the original behaviour, where Tab only nests an item under the previous one.",
+      )
+      .addToggle((toggle) => {
+        toggle
+          .setValue(this.settings.freeIndentation)
+          .onChange(async (value) => {
+            this.settings.freeIndentation = value;
+            await this.settings.save();
+          });
+      });
+
+    new Setting(containerEl)
       .setName("Enhance the Enter key")
       .setDesc("Make the Enter key behave the same as other outliners.")
       .addToggle((toggle) => {

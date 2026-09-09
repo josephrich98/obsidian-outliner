@@ -47,7 +47,11 @@ export class TabBehaviourOverride implements Feature {
   private run = (editor: MyEditor) => {
     return this.operationPerformer.perform(
       (root) =>
-        new IndentList(root, this.obsidianSettings.getDefaultIndentChars()),
+        new IndentList(
+          root,
+          this.obsidianSettings.getDefaultIndentChars(),
+          this.settings.freeIndentation,
+        ),
       editor,
     );
   };

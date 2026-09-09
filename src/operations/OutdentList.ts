@@ -10,6 +10,7 @@ export class OutdentList implements Operation {
   constructor(
     private root: Root,
     private defaultIndentChars = "",
+    private freeIndentation = true,
   ) {}
 
   shouldStopPropagation() {
@@ -36,7 +37,9 @@ export class OutdentList implements Operation {
     // An item indented deeper than one step below its parent (see IndentList)
     // is pulled back one step at a time instead of jumping to the parent level
     // at once.
-    const outdentStep = this.getOutdentStep(list, parent);
+    const outdentStep = this.freeIndentation
+      ? this.getOutdentStep(list, parent)
+      : null;
 
     if (outdentStep !== null) {
       this.updated = true;
@@ -62,7 +65,7 @@ export class OutdentList implements Operation {
     if (!grandParent) {
       const indentRmTill = list.getFirstLineIndent().length;
 
-      if (indentRmTill === 0) {
+      if (indentRmTill === 0 || !this.freeIndentation) {
         return;
       }
 

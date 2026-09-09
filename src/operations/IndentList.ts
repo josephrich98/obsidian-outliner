@@ -10,6 +10,7 @@ export class IndentList implements Operation {
   constructor(
     private root: Root,
     private defaultIndentChars: string,
+    private freeIndentation = true,
   ) {}
 
   shouldStopPropagation() {
@@ -35,7 +36,12 @@ export class IndentList implements Operation {
 
     // Without a previous sibling there is nothing to become a child of, but
     // the item can still be indented one more step in place, the way a plain
-    // Markdown list indents.
+    // Markdown list indents, unless the user wants the strict outliner
+    // behaviour.
+    if (!prev && !this.freeIndentation) {
+      return;
+    }
+
     this.updated = true;
 
     const listStartLineBefore = root.getContentLinesRangeOf(list)[0];

@@ -139,3 +139,21 @@
         1. three|
     2. four
 ```
+
+# Tab should not indent line deeper when the free indentation is off
+
+- setting: `freeIndent=false`
+- applyState:
+
+```md
+- qwe
+  - qwe|
+```
+
+- keydown: `Tab`
+- assertState:
+
+```md
+- qwe
+  - qwe|
+```

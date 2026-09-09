@@ -10,8 +10,13 @@ export class OutdentListIfItsEmpty implements Operation {
   constructor(
     private root: Root,
     defaultIndentChars = "",
+    freeIndentation = true,
   ) {
-    this.outdentList = new OutdentList(root, defaultIndentChars);
+    this.outdentList = new OutdentList(
+      root,
+      defaultIndentChars,
+      freeIndentation,
+    );
   }
 
   shouldStopPropagation() {

@@ -201,4 +201,20 @@ describe("OutdentList operation", () => {
     expect(root.print()).toBe("- item 1");
     expect(op3.shouldUpdate()).toBe(false);
   });
+
+  test("should outdent an over-indented item to the parent level when the free indentation is off", () => {
+    const root = makeRoot({
+      editor: makeEditor({
+        text: "- item 1\n      - item 1.1\n",
+        cursor: { line: 1, ch: 10 },
+      }),
+      settings: makeSettings(),
+    });
+
+    const op = new OutdentList(root, "  ", false);
+    op.perform();
+
+    expect(root.print()).toBe("- item 1\n- item 1.1");
+    expect(root.getCursor().ch).toBe(4);
+  });
 });

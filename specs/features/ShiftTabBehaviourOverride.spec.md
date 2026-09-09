@@ -103,3 +103,21 @@
 ```md
 - qwe|
 ```
+
+# Shift-Tab should outdent an over-indented line to the parent level when the free indentation is off
+
+- setting: `freeIndent=false`
+- applyState:
+
+```md
+- qwe
+      - qwe|
+```
+
+- keydown: `Shift-Tab`
+- assertState:
+
+```md
+- qwe
+- qwe|
+```

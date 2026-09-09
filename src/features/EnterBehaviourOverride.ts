@@ -63,6 +63,7 @@ export class EnterBehaviourOverride implements Feature {
         new OutdentListIfItsEmpty(
           root,
           this.obsidianSettings.getDefaultIndentChars(),
+          this.settings.freeIndentation,
         ),
         editor,
       );

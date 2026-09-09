@@ -72,6 +72,7 @@ export default class ObsidianOutlinerPlugin extends Plugin {
       // general features
       new ListsMovementCommands(
         this,
+        this.settings,
         this.obsidianSettings,
         this.operationPerformer,
       ),
@@ -79,7 +80,11 @@ export default class ObsidianOutlinerPlugin extends Plugin {
       new ListsCheckboxCommands(this),
       new ListsAlertCommands(this),
       new AlertLinesHighlight(this),
-      new OverIndentedItemsRendering(this, this.obsidianSettings),
+      new OverIndentedItemsRendering(
+        this,
+        this.settings,
+        this.obsidianSettings,
+      ),
 
       // features based on settings.keepCursorWithinContent
       new EditorSelectionsBehaviourOverride(this, this.settings, this.parser),

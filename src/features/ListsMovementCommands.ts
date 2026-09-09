@@ -9,11 +9,13 @@ import { MoveListUp } from "../operations/MoveListUp";
 import { OutdentList } from "../operations/OutdentList";
 import { ObsidianSettings } from "../services/ObsidianSettings";
 import { OperationPerformer } from "../services/OperationPerformer";
+import { Settings } from "../services/Settings";
 import { createEditorCallback } from "../utils/createEditorCallback";
 
 export class ListsMovementCommands implements Feature {
   constructor(
     private plugin: Plugin,
+    private settings: Settings,
     private obsidianSettings: ObsidianSettings,
     private operationPerformer: OperationPerformer,
   ) {}
@@ -85,7 +87,11 @@ export class ListsMovementCommands implements Feature {
   private indentList = (editor: MyEditor) => {
     const { shouldStopPropagation } = this.operationPerformer.perform(
       (root) =>
-        new IndentList(root, this.obsidianSettings.getDefaultIndentChars()),
+        new IndentList(
+          root,
+          this.obsidianSettings.getDefaultIndentChars(),
+          this.settings.freeIndentation,
+        ),
       editor,
     );
 
@@ -95,7 +101,11 @@ export class ListsMovementCommands implements Feature {
   private outdentList = (editor: MyEditor) => {
     const { shouldStopPropagation } = this.operationPerformer.perform(
       (root) =>
-        new OutdentList(root, this.obsidianSettings.getDefaultIndentChars()),
+        new OutdentList(
+          root,
+          this.obsidianSettings.getDefaultIndentChars(),
+          this.settings.freeIndentation,
+        ),
       editor,
     );
 

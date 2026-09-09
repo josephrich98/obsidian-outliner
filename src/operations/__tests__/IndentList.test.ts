@@ -233,4 +233,21 @@ describe("IndentList operation", () => {
     expect(root.print()).toBe("- item 1\n    - item 1.1\n  - item 1.2");
     expect(root.getCursor().ch).toBe(8);
   });
+
+  test("should not indent an only child when the free indentation is off", () => {
+    const root = makeRoot({
+      editor: makeEditor({
+        text: "- item 1\n  - item 1.1\n",
+        cursor: { line: 1, ch: 6 },
+      }),
+      settings: makeSettings(),
+    });
+
+    const op = new IndentList(root, "  ", false);
+    op.perform();
+
+    expect(root.print()).toBe("- item 1\n  - item 1.1");
+    expect(op.shouldStopPropagation()).toBe(true);
+    expect(op.shouldUpdate()).toBe(false);
+  });
 });

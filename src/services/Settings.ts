@@ -11,6 +11,7 @@ interface SettingsObject {
   betterEnter: boolean;
   betterVimO: boolean;
   betterTab: boolean;
+  freeIndent: boolean;
   metaBackspaceErasesItem: boolean;
   selectAll: boolean;
   listLines: boolean;
@@ -26,6 +27,7 @@ const DEFAULT_SETTINGS: SettingsObject = {
   betterEnter: true,
   betterVimO: true,
   betterTab: true,
+  freeIndent: true,
   metaBackspaceErasesItem: true,
   selectAll: true,
   listLines: false,
@@ -72,6 +74,14 @@ export class Settings {
 
   set overrideTabBehaviour(value: boolean) {
     this.set("betterTab", value);
+  }
+
+  get freeIndentation() {
+    return this.values.freeIndent;
+  }
+
+  set freeIndentation(value: boolean) {
+    this.set("freeIndent", value);
   }
 
   get overrideEnterBehaviour() {

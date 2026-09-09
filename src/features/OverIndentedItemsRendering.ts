@@ -15,6 +15,7 @@ import {
 import { Feature } from "./Feature";
 
 import { ObsidianSettings } from "../services/ObsidianSettings";
+import { Settings } from "../services/Settings";
 
 const LINE_CLASS = "outliner-plugin-over-indented-line";
 
@@ -82,7 +83,6 @@ const ulFormatting = markOf(
 const olFormatting = markOf(
   "cm-formatting cm-formatting-list cm-formatting-list-ol",
 );
-const taskFormatting = markOf("cm-formatting cm-formatting-task");
 const bullet = markOf("list-bullet");
 const listIndent = markOf("cm-hmd-list-indent");
 const indentUnit = markOf("cm-indent");
@@ -125,34 +125,53 @@ function hasToken(state: EditorState, pos: number, token: string) {
   return node.name.split("_").includes(token);
 }
 
-function isLineSelected(state: EditorState, from: number, to: number) {
-  return state.selection.ranges.some((r) => r.from <= to && r.to >= from);
-}
-
 class OverIndentedItemsPluginValue implements PluginValue {
   decorations: DecorationSet;
+  // The checkboxes, so that the cursor never lands inside the hidden markup.
+  atomicRanges: DecorationSet = Decoration.none;
+  private settingsChanged = false;
 
   constructor(
+    private settings: Settings,
     private obsidianSettings: ObsidianSettings,
-    view: EditorView,
+    private view: EditorView,
   ) {
     this.decorations = this.buildDecorations(view);
+    this.settings.onChange(this.onSettingsChange);
   }
+
+  destroy() {
+    this.settings.removeCallback(this.onSettingsChange);
+  }
+
+  private onSettingsChange = () => {
+    // An empty transaction is enough to get update() called.
+    this.settingsChanged = true;
+    this.view.dispatch({});
+  };
 
   update(update: ViewUpdate) {
     if (
+      this.settingsChanged ||
       update.docChanged ||
       update.viewportChanged ||
-      update.selectionSet ||
       syntaxTree(update.state) !== syntaxTree(update.startState)
     ) {
+      this.settingsChanged = false;
       this.decorations = this.buildDecorations(update.view);
     }
   }
 
   private buildDecorations(view: EditorView): DecorationSet {
     const builder = new RangeSetBuilder<Decoration>();
+    const atomicBuilder = new RangeSetBuilder<Decoration>();
     const { state } = view;
+
+    this.atomicRanges = Decoration.none;
+
+    if (!this.settings.freeIndentation) {
+      return builder.finish();
+    }
     // With the guides off Obsidian leaves the indent as raw whitespace, and
     // the list levels are simply as wide as the tabs or spaces are.
     const layOutIndent = this.obsidianSettings.isIndentGuideShown();
@@ -181,8 +200,6 @@ class OverIndentedItemsPluginValue implements PluginValue {
 
         const isTask = checkboxChar !== undefined;
         const isOrdered = /\d/.test(bulletSign);
-        // Like Obsidian, show the raw markup on the line being edited.
-        const selected = isLineSelected(state, line.from, line.to);
 
         builder.add(
           line.from,
@@ -209,13 +226,13 @@ class OverIndentedItemsPluginValue implements PluginValue {
           }
         }
 
-        if (isTask && !selected) {
+        if (isTask) {
           // The checkbox replaces "- [ ]", the space after it stays.
-          builder.add(
-            bulletFrom,
-            contentFrom + 3,
-            Decoration.replace({ widget: new CheckboxWidget(checkboxChar) }),
-          );
+          const checkbox = Decoration.replace({
+            widget: new CheckboxWidget(checkboxChar),
+          });
+          builder.add(bulletFrom, contentFrom + 3, checkbox);
+          atomicBuilder.add(bulletFrom, contentFrom + 3, checkbox);
           continue;
         }
 
@@ -225,13 +242,13 @@ class OverIndentedItemsPluginValue implements PluginValue {
           isOrdered ? olFormatting : ulFormatting,
         );
 
-        if (isTask) {
-          builder.add(contentFrom, contentFrom + 3, taskFormatting);
-        } else if (!isOrdered && !selected) {
+        if (!isOrdered) {
           builder.add(bulletFrom, bulletTo, bullet);
         }
       }
     }
+
+    this.atomicRanges = atomicBuilder.finish();
 
     return builder.finish();
   }
@@ -249,15 +266,25 @@ class OverIndentedItemsPluginValue implements PluginValue {
 export class OverIndentedItemsRendering implements Feature {
   constructor(
     private plugin: Plugin,
+    private settings: Settings,
     private obsidianSettings: ObsidianSettings,
   ) {}
 
   async load() {
     this.plugin.registerEditorExtension(
       ViewPlugin.define(
-        (view) => new OverIndentedItemsPluginValue(this.obsidianSettings, view),
+        (view) =>
+          new OverIndentedItemsPluginValue(
+            this.settings,
+            this.obsidianSettings,
+            view,
+          ),
         {
           decorations: (v) => v.decorations,
+          provide: (plugin) =>
+            EditorView.atomicRanges.of(
+              (view) => view.plugin(plugin)?.atomicRanges ?? Decoration.none,
+            ),
         },
       ),
     );
